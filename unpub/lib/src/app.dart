@@ -49,7 +49,7 @@ class App {
     this.googleapisProxy,
     this.overrideUploaderEmail,
     this.uploadValidator,
-    this.pemPath,
+    this.pemPath = '',
   });
 
   static shelf.Response _okWithJson(Map<String, dynamic> data) =>
