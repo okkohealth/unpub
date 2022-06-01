@@ -35,7 +35,7 @@ class App {
   /// http(s) proxy to call googleapis (to get uploader email)
   final String? googleapisProxy;
   final String? overrideUploaderEmail;
-
+  final String pemPath;
   /// validate if the package can be published
   ///
   /// for more details, see: https://github.com/bytedance/unpub#package-validator
@@ -49,6 +49,7 @@ class App {
     this.googleapisProxy,
     this.overrideUploaderEmail,
     this.uploadValidator,
+    this.pemPath,
   });
 
   static shelf.Response _okWithJson(Map<String, dynamic> data) =>
@@ -110,7 +111,20 @@ class App {
       var res = await router.call(req);
       return res;
     });
-    var server = await shelf_io.serve(handler, host, port);
+
+    final securityContext = this.pemPath.isNotEmpty
+        ? (SecurityContext()
+          ..useCertificateChain(this.pemPath)
+          ..usePrivateKey(this.pemPath))
+        : null;
+
+    var server = await shelf_io.serve(
+      handler,
+      host,
+      port,
+      securityContext: securityContext,
+    );
+
     return server;
   }
 
