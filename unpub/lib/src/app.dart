@@ -35,6 +35,8 @@ class App {
   /// http(s) proxy to call googleapis (to get uploader email)
   final String? googleapisProxy;
   final String? overrideUploaderEmail;
+  final String pemPath;
+  final String keyPath;
 
   /// validate if the package can be published
   ///
@@ -49,6 +51,8 @@ class App {
     this.googleapisProxy,
     this.overrideUploaderEmail,
     this.uploadValidator,
+    this.pemPath = '',
+    this.keyPath = '',
   });
 
   static shelf.Response _okWithJson(Map<String, dynamic> data) =>
@@ -110,7 +114,20 @@ class App {
       var res = await router.call(req);
       return res;
     });
-    var server = await shelf_io.serve(handler, host, port);
+
+    final securityContext = this.pemPath.isNotEmpty && this.keyPath.isNotEmpty
+        ? (SecurityContext()
+          ..useCertificateChain(this.pemPath)
+          ..usePrivateKey(this.keyPath))
+        : null;
+
+    var server = await shelf_io.serve(
+      handler,
+      host,
+      port,
+      securityContext: securityContext,
+    );
+
     return server;
   }
 
